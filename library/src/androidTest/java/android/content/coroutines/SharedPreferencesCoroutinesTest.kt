@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import kotlin.random.Random
@@ -61,7 +62,7 @@ class SharedPreferencesCoroutinesTest {
         }
         prefernces.editCo { putStringSet(TEST_KEY1, value) }
         val restored = prefernces.getStringSetCo(TEST_KEY1)!!
-        assertEquals("String set values are not equal", value,
+        assertTrue("String set values are not equal",
             value.containsAll(restored) && restored.containsAll(value)
         )
     }
