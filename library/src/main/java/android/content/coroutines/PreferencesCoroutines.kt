@@ -8,7 +8,7 @@ import kotlin.coroutines.suspendCoroutine
 
 
 //region editor
-suspend fun SharedPreferences.edit(block: SharedPreferences.Editor.() -> Unit) {
+suspend fun SharedPreferences.editCo(block: SharedPreferences.Editor.() -> Unit) {
     suspendCoroutine<Unit> { continuation ->
         ExecutorProvider.io.execute {
             continuation.resumeWith(
