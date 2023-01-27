@@ -2,7 +2,6 @@ package android.content.coroutines
 
 import android.content.SharedPreferences
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import kotlin.coroutines.suspendCoroutine
@@ -62,7 +61,7 @@ private fun <T> SharedPreferences.getValueFlow(
     get: suspend SharedPreferences.() -> T
 ): Flow<T?> {
     return channelFlow {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, changedKey ->
+        val listener = SharedPreferenceChangeListenerPool.acquire { changedKey ->
             if (changedKey == key) {
                 launch {
                     trySend(this@getValueFlow.get())
@@ -70,7 +69,10 @@ private fun <T> SharedPreferences.getValueFlow(
             }
         }
         registerOnSharedPreferenceChangeListener(listener)
-        invokeOnClose { unregisterOnSharedPreferenceChangeListener(listener) }
+        invokeOnClose {
+            unregisterOnSharedPreferenceChangeListener(listener)
+            SharedPreferenceChangeListenerPool.release(listener)
+        }
         trySend(this@getValueFlow.get())
     }
 }
