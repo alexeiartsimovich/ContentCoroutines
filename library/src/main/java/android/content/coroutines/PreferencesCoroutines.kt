@@ -24,20 +24,24 @@ suspend fun SharedPreferences.getStringCo(key: String, defValue: String? = null)
     return getValueCo { getString(key, defValue) }
 }
 
-suspend fun SharedPreferences.getIntCo(key: String, defValue: Int? = null): Int {
-    return getValueCo { if (contains(key)) getInt(key, defValue ?: 0) else null }!!
+suspend fun SharedPreferences.getIntCo(key: String, defValue: Int? = null): Int? {
+    return getValueCo { if (contains(key)) getInt(key, defValue ?: 0) else null }
 }
 
-suspend fun SharedPreferences.getLongCo(key: String, defValue: Long? = null): Long {
-    return getValueCo { if (contains(key)) getLong(key, defValue ?: 0L) else null }!!
+suspend fun SharedPreferences.getLongCo(key: String, defValue: Long? = null): Long? {
+    return getValueCo { if (contains(key)) getLong(key, defValue ?: 0L) else null }
 }
 
-suspend fun SharedPreferences.getFloatCo(key: String, defValue: Float? = null): Float {
-    return getValueCo { if (contains(key)) getFloat(key, defValue ?: 0f) else null }!!
+suspend fun SharedPreferences.getFloatCo(key: String, defValue: Float? = null): Float? {
+    return getValueCo { if (contains(key)) getFloat(key, defValue ?: 0f) else null }
 }
 
 suspend fun SharedPreferences.getStringSetCo(key: String, defValues: Set<String?>? = null): Set<String?>? {
     return getValueCo { getStringSet(key, defValues) }
+}
+
+suspend fun SharedPreferences.getBooleanCo(key: String, defValue: Boolean? = null): Boolean? {
+    return getValueCo { if (contains(key)) getBoolean(key, defValue ?: false) else null }
 }
 
 suspend fun <V> SharedPreferences.getValueCo(getter: SharedPreferences.() -> V): V? {
@@ -88,5 +92,9 @@ fun SharedPreferences.getFloatFlow(key: String, defValue: Float? = null): Flow<F
 
 fun SharedPreferences.getStringSetFlow(key: String, defValue: Set<String?>? = null): Flow<Set<String?>?> {
     return getValueFlow(key = key) { getStringSet(key, defValue) }
+}
+
+fun SharedPreferences.getBooleanFlow(key: String, defValue: Boolean? = null): Flow<Boolean?> {
+    return getValueFlow(key = key) { getBooleanCo(key, defValue) }
 }
 //endregion
