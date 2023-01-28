@@ -20,42 +20,15 @@ fun <T> ContentResolver.queryByIdWithFlow(
     itemId: Long,
     projection: Array<String>? = null,
     mapper: CursorMapper<T>
-): Flow<T> {
+): Flow<T?> {
     val itemUri = ContentUris.withAppendedId(uri, itemId)
-    return queryWithFlow(itemUri, projection, null, null, null, mapper)
+    return queryWithFlow(itemUri, projection, selection = null, selectionArgs = null, sortOrder = null, mapper)
         .map { list ->
-            if (list.isEmpty()) {
-                throw IllegalArgumentException("No data found: uri=$uri, id=$itemId")
-            }
             if (list.size > 1) {
                 throw IllegalArgumentException("More than 1 item found: uri=$uri, id=$itemId")
             }
-            list.first()
+            list.firstOrNull()
         }
-//    val queryItemCo: suspend () -> T = {
-//        val list = queryListCo(itemUri, projection, null, null, null, mapper)
-//        if (list.isEmpty()) {
-//            throw IllegalArgumentException("No data found: uri=$uri, id=$itemId")
-//        }
-//        if (list.size > 1) {
-//            throw IllegalArgumentException("More than 1 item found: uri=$uri, id=$itemId")
-//        }
-//        list.first()
-//    }
-//    return channelFlow {
-//        val observer = object : ContentObserver(observerHandler) {
-//            override fun onChange(selfChange: Boolean) {
-//                launch {
-//                    trySend(queryItemCo.invoke())
-//                }
-//            }
-//        }
-//        registerContentObserver(uri, false, observer)
-//        invokeOnClose {
-//            unregisterContentObserver(observer)
-//        }
-//        trySend(queryItemCo.invoke())
-//    }
 }
 
 fun <T> ContentResolver.queryWithFlow(
@@ -102,14 +75,13 @@ private suspend fun <T> ContentResolver.queryListCo(
                     query(uri, projection, selection, selectionArgs, sortOrder, cancellationSignal)
                         ?: throw NullPointerException("No result for query: uri=$uri")
                 val resultList = ArrayList<T>(cursor.count)
-                try {
-                    for (i in 0 until cursor.count) {
-                        val item = mapper.mapCursor(cursor)
-                        resultList.add(item)
-                        cursor.moveToNext()
+                cursor.use { _cursor ->
+                    if (_cursor.moveToFirst()) {
+                        do {
+                            val item = mapper.mapCursor(_cursor)
+                            resultList.add(item)
+                        } while (_cursor.moveToNext())
                     }
-                } finally {
-                    cursor.close()
                 }
                 return@runCatching resultList
             }
