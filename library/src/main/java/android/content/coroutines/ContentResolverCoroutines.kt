@@ -7,8 +7,9 @@ import android.net.Uri
 import android.os.CancellationSignal
 import android.os.Handler
 import android.os.Looper
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.channelFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -39,7 +40,7 @@ fun <T> ContentResolver.queryWithFlow(
     sortOrder: String? = null,
     mapper: CursorMapper<T>
 ): Flow<List<T>> {
-    return channelFlow {
+    return callbackFlow {
         val observer = object : ContentObserver(sharedObserverHandler) {
             override fun onChange(selfChange: Boolean) {
                 launch {
@@ -48,10 +49,10 @@ fun <T> ContentResolver.queryWithFlow(
             }
         }
         registerContentObserver(uri, false, observer)
-        invokeOnClose {
+        trySend(queryListCo(uri, projection, selection, selectionArgs, sortOrder, mapper))
+        awaitClose {
             unregisterContentObserver(observer)
         }
-        trySend(queryListCo(uri, projection, selection, selectionArgs, sortOrder, mapper))
     }
 }
 
