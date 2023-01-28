@@ -3,6 +3,8 @@ package android.content.coroutines.sample
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.coroutines.CursorMapper
+import android.content.coroutines.deleteCo
+import android.content.coroutines.insertCo
 import android.content.coroutines.queryWithFlow
 import android.database.DataSetObserver
 import android.net.Uri
@@ -15,7 +17,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -62,7 +63,7 @@ class SampleActivity : AppCompatActivity() {
     }
 
     private fun clearPlaylists() = lifecycleScope.launch(exceptionHandler) {
-        val count = contentResolver.delete(URI, null, null)
+        val count = contentResolver.deleteCo(URI, null, null)
         contentResolver.notifyChange(URI, null)
         Toast.makeText(this@SampleActivity,
             "Deleted $count playlist(s)", Toast.LENGTH_SHORT).show()
@@ -79,7 +80,7 @@ class SampleActivity : AppCompatActivity() {
         val contentValues = ContentValues().apply {
             put(MediaStore.Audio.Playlists.NAME, name)
         }
-        val uri = contentResolver.insert(URI, contentValues)!!
+        val uri = contentResolver.insertCo(URI, contentValues)!!
         val playlist = Playlist(
             id = ContentUris.parseId(uri),
             name = name

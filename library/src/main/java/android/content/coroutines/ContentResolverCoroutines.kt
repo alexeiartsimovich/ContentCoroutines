@@ -2,11 +2,11 @@ package android.content.coroutines
 
 import android.content.ContentResolver
 import android.content.ContentUris
+import android.content.ContentValues
 import android.database.ContentObserver
 import android.net.Uri
-import android.os.CancellationSignal
-import android.os.Handler
-import android.os.Looper
+import android.os.*
+import androidx.annotation.RequiresApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -86,6 +86,53 @@ private suspend fun <T> ContentResolver.queryListCo(
                 }
                 return@runCatching resultList
             }
+            continuation.resumeWith(result)
+        }
+    }
+}
+
+suspend fun ContentResolver.insertCo(
+    uri: Uri,
+    values: ContentValues
+): Uri? = suspendImpl { insert(uri, values) }
+
+@RequiresApi(Build.VERSION_CODES.R)
+suspend fun ContentResolver.insertCo(
+    uri: Uri,
+    values: ContentValues,
+    extras: Bundle? = null
+): Uri? = suspendImpl { insert(uri, values, extras) }
+
+suspend fun ContentResolver.updateCo(
+    uri: Uri,
+    values: ContentValues,
+    where: String? = null,
+    selectionArgs: Array<String?>? = null
+): Int = suspendImpl { update(uri, values, where, selectionArgs) }
+
+@RequiresApi(Build.VERSION_CODES.R)
+suspend fun ContentResolver.updateCo(
+    uri: Uri,
+    values: ContentValues,
+    extras: Bundle? = null
+): Int = suspendImpl { update(uri, values, extras) }
+
+suspend fun ContentResolver.deleteCo(
+    uri: Uri,
+    where: String? = null,
+    selectionArgs: Array<String?>? = null
+): Int = suspendImpl { delete(uri, where, selectionArgs) }
+
+@RequiresApi(Build.VERSION_CODES.R)
+suspend fun ContentResolver.deleteCo(
+    uri: Uri,
+    extras: Bundle? = null
+): Int = suspendImpl { delete(uri, extras) }
+
+private suspend fun <T> suspendImpl(lambda: () -> T): T {
+    return suspendCancellableCoroutine<T> { continuation ->
+        ExecutorProvider.io.execute {
+            val result: Result<T> = runCatching { lambda.invoke() }
             continuation.resumeWith(result)
         }
     }
