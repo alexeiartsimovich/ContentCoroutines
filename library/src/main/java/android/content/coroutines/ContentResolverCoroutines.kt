@@ -26,7 +26,7 @@ fun <T> ContentResolver.queryByIdWithFlow(
     return queryWithFlow(itemUri, projection, selection = null, selectionArgs = null, sortOrder = null, mapper)
         .map { list ->
             if (list.size > 1) {
-                throw IllegalArgumentException("More than 1 item found: uri=$uri, id=$itemId")
+                throw IllegalArgumentException("Query returned more than one element: uri=$itemUri")
             }
             list.firstOrNull()
         }
@@ -74,7 +74,7 @@ private suspend fun <T> ContentResolver.queryListCo(
                 continuation.invokeOnCancellation { cancellationSignal.cancel() }
                 val cursor =
                     query(uri, projection, selection, selectionArgs, sortOrder, cancellationSignal)
-                        ?: throw NullPointerException("No result for query: uri=$uri")
+                        ?: throw NullPointerException("Query returned null: uri=$uri")
                 val resultList = ArrayList<T>(cursor.count)
                 cursor.use { _cursor ->
                     if (_cursor.moveToFirst()) {
