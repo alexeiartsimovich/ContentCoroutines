@@ -4,6 +4,7 @@ import android.content.ContentUris
 import android.content.ContentValues
 import android.content.coroutines.CursorMapper
 import android.content.coroutines.queryWithFlow
+import android.database.DataSetObserver
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -16,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+
 
 class SampleActivity : AppCompatActivity() {
     private val random by lazy { Random(System.currentTimeMillis()) }
@@ -33,6 +35,11 @@ class SampleActivity : AppCompatActivity() {
         setContentView(R.layout.activity_sample)
         listView = findViewById(R.id.list_view)
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1)
+        adapter.registerDataSetObserver(object : DataSetObserver() {
+            override fun onChanged() {
+                listView.setSelection(adapter.count - 1)
+            }
+        })
         listView.adapter = adapter
         findViewById<Button>(R.id.clear_button)?.setOnClickListener {
             clearPlaylists()
