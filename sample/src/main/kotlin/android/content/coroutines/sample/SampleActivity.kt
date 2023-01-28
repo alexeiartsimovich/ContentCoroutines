@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -83,7 +84,8 @@ class SampleActivity : AppCompatActivity() {
             id = ContentUris.parseId(uri),
             name = name
         )
-        adapter.add(playlist)
+        Toast.makeText(this@SampleActivity,
+            "Added new item: $playlist", Toast.LENGTH_SHORT).show()
     }
 
     companion object {
