@@ -1,5 +1,6 @@
 package android.content.coroutines.sample
 
+import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.coroutines.CursorMapper
@@ -96,6 +97,7 @@ class SampleActivity : AppCompatActivity() {
             MediaStore.Audio.Playlists.NAME
         )
 
+        @SuppressLint("Range")
         private val CURSOR_MAPPER = CursorMapper<Playlist> { cursor ->
             Playlist(
                 id = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Playlists._ID)),
