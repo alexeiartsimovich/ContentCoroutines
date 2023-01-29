@@ -33,43 +33,43 @@ class SharedPreferencesFlowTest : BaseSharedPreferencesTest() {
 
     @Test
     fun test_setAndGetInt() = testFlow<Int>(
-        getValueFlow = { getIntFlow(it) },
-        updateValue = { key, value -> editCo { putInt(key, value) } },
+        getValueFlow = { getIntValueFlow(it) },
+        updateValue = { key, value -> edit { putInt(key, value) } },
         nextValue = { random.nextInt() }
     )
 
     @Test
     fun test_setAndGetLong() = testFlow<Long>(
-        getValueFlow = { getLongFlow(it) },
-        updateValue = { key, value -> editCo { putLong(key, value) } },
+        getValueFlow = { getLongValueFlow(it) },
+        updateValue = { key, value -> edit { putLong(key, value) } },
         nextValue = { random.nextLong() }
     )
 
     @Test
     fun test_setAndGetFloat() = testFlow<Float>(
-        getValueFlow = { getFloatFlow(it) },
-        updateValue = { key, value -> editCo { putFloat(key, value) } },
+        getValueFlow = { getFloatValueFlow(it) },
+        updateValue = { key, value -> edit { putFloat(key, value) } },
         nextValue = { random.nextFloat() }
     )
 
     @Test
     fun test_setAndGetBoolean() = testFlow<Boolean>(
-        getValueFlow = { getBooleanFlow(it) },
-        updateValue = { key, value -> editCo { putBoolean(key, value) } },
+        getValueFlow = { getBooleanValueFlow(it) },
+        updateValue = { key, value -> edit { putBoolean(key, value) } },
         nextValue = { random.nextBoolean() }
     )
 
     @Test
     fun test_setAndGetString() = testFlow<String>(
-        getValueFlow = { getStringFlow(it) },
-        updateValue = { key, value -> editCo { putString(key, value) } },
+        getValueFlow = { getStringValueFlow(it) },
+        updateValue = { key, value -> edit { putString(key, value) } },
         nextValue = { random.nextInt().toString() }
     )
 
     @Test
     fun test_setAndGetStringSet() = testFlow<Set<String?>>(
-        getValueFlow = { getStringSetFlow(it) },
-        updateValue = { key, value -> editCo { putStringSet(key, value) } },
+        getValueFlow = { getStringSetValueFlow(it) },
+        updateValue = { key, value -> edit { putStringSet(key, value) } },
         nextValue = {
             val size = 10 + random.nextInt(10)
             val set = HashSet<String>(size)

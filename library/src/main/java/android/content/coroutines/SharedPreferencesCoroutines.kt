@@ -1,5 +1,6 @@
 package android.content.coroutines
 
+import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -9,11 +10,20 @@ import kotlin.coroutines.suspendCoroutine
 
 
 //region editor
-suspend fun SharedPreferences.editCo(block: SharedPreferences.Editor.() -> Unit) {
+@SuppressLint("ApplySharedPref")
+suspend fun SharedPreferences.edit(commit: Boolean = false, block: SharedPreferences.Editor.() -> Unit) {
     suspendCoroutine<Unit> { continuation ->
         ExecutorProvider.io.execute {
             continuation.resumeWith(
-                runCatching<Unit> { edit().apply(block).commit() }
+                runCatching<Unit> {
+                    val editor = edit()
+                    editor.block()
+                    if (commit) {
+                        editor.commit()
+                    } else {
+                        editor.apply()
+                    }
+                }
             )
         }
     }
@@ -21,35 +31,35 @@ suspend fun SharedPreferences.editCo(block: SharedPreferences.Editor.() -> Unit)
 //endregion
 
 //region suspended functions
-suspend fun SharedPreferences.getStringCo(key: String, defValue: String? = null): String? {
-    return getValueCo { getString(key, defValue) }
+suspend fun SharedPreferences.getStringValue(key: String, defValue: String? = null): String? {
+    return getValue { getString(key, defValue) }
 }
 
-suspend fun SharedPreferences.getIntCo(key: String, defValue: Int? = null): Int? {
-    return getValueCo { if (contains(key)) getInt(key, defValue ?: 0) else null }
+suspend fun SharedPreferences.getIntValue(key: String, defValue: Int? = null): Int? {
+    return getValue { if (contains(key)) getInt(key, defValue ?: 0) else null }
 }
 
-suspend fun SharedPreferences.getLongCo(key: String, defValue: Long? = null): Long? {
-    return getValueCo { if (contains(key)) getLong(key, defValue ?: 0L) else null }
+suspend fun SharedPreferences.getLongValue(key: String, defValue: Long? = null): Long? {
+    return getValue { if (contains(key)) getLong(key, defValue ?: 0L) else null }
 }
 
-suspend fun SharedPreferences.getFloatCo(key: String, defValue: Float? = null): Float? {
-    return getValueCo { if (contains(key)) getFloat(key, defValue ?: 0f) else null }
+suspend fun SharedPreferences.getFloatValue(key: String, defValue: Float? = null): Float? {
+    return getValue { if (contains(key)) getFloat(key, defValue ?: 0f) else null }
 }
 
-suspend fun SharedPreferences.getStringSetCo(key: String, defValues: Set<String?>? = null): Set<String?>? {
-    return getValueCo { getStringSet(key, defValues) }
+suspend fun SharedPreferences.getStringSetValue(key: String, defValues: Set<String?>? = null): Set<String?>? {
+    return getValue { getStringSet(key, defValues) }
 }
 
-suspend fun SharedPreferences.getBooleanCo(key: String, defValue: Boolean? = null): Boolean? {
-    return getValueCo { if (contains(key)) getBoolean(key, defValue ?: false) else null }
+suspend fun SharedPreferences.getBooleanValue(key: String, defValue: Boolean? = null): Boolean? {
+    return getValue { if (contains(key)) getBoolean(key, defValue ?: false) else null }
 }
 
-suspend fun <V> SharedPreferences.getValueCo(getter: SharedPreferences.() -> V): V? {
+private suspend fun <V> SharedPreferences.getValue(get: SharedPreferences.() -> V): V? {
     return suspendCoroutine<V?> { continuation ->
         ExecutorProvider.io.execute {
             continuation.resumeWith(
-                runCatching<V?> { getter() }
+                runCatching<V?> { get() }
             )
         }
     }
@@ -57,6 +67,30 @@ suspend fun <V> SharedPreferences.getValueCo(getter: SharedPreferences.() -> V):
 //endregion
 
 //region Flows
+fun SharedPreferences.getStringValueFlow(key: String, defValue: String? = null): Flow<String?> {
+    return getValueFlow(key = key) { getStringValue(key) ?: defValue }
+}
+
+fun SharedPreferences.getIntValueFlow(key: String, defValue: Int? = null): Flow<Int?> {
+    return getValueFlow(key = key) { getIntValue(key, defValue) }
+}
+
+fun SharedPreferences.getLongValueFlow(key: String, defValue: Long? = null): Flow<Long?> {
+    return getValueFlow(key = key) { getLongValue(key, defValue) }
+}
+
+fun SharedPreferences.getFloatValueFlow(key: String, defValue: Float? = null): Flow<Float?> {
+    return getValueFlow(key = key) { getFloatValue(key, defValue) }
+}
+
+fun SharedPreferences.getStringSetValueFlow(key: String, defValue: Set<String?>? = null): Flow<Set<String?>?> {
+    return getValueFlow(key = key) { getStringSet(key, defValue) }
+}
+
+fun SharedPreferences.getBooleanValueFlow(key: String, defValue: Boolean? = null): Flow<Boolean?> {
+    return getValueFlow(key = key) { getBooleanValue(key, defValue) }
+}
+
 private fun <T> SharedPreferences.getValueFlow(
     key: String,
     get: suspend SharedPreferences.() -> T
@@ -76,29 +110,5 @@ private fun <T> SharedPreferences.getValueFlow(
             SharedPreferenceChangeListenerPool.release(listener)
         }
     }
-}
-
-fun SharedPreferences.getStringFlow(key: String, defValue: String? = null): Flow<String?> {
-    return getValueFlow(key = key) { getStringCo(key) ?: defValue }
-}
-
-fun SharedPreferences.getIntFlow(key: String, defValue: Int? = null): Flow<Int?> {
-    return getValueFlow(key = key) { getIntCo(key, defValue) }
-}
-
-fun SharedPreferences.getLongFlow(key: String, defValue: Long? = null): Flow<Long?> {
-    return getValueFlow(key = key) { getLongCo(key, defValue) }
-}
-
-fun SharedPreferences.getFloatFlow(key: String, defValue: Float? = null): Flow<Float?> {
-    return getValueFlow(key = key) { getFloatCo(key, defValue) }
-}
-
-fun SharedPreferences.getStringSetFlow(key: String, defValue: Set<String?>? = null): Flow<Set<String?>?> {
-    return getValueFlow(key = key) { getStringSet(key, defValue) }
-}
-
-fun SharedPreferences.getBooleanFlow(key: String, defValue: Boolean? = null): Flow<Boolean?> {
-    return getValueFlow(key = key) { getBooleanCo(key, defValue) }
 }
 //endregion

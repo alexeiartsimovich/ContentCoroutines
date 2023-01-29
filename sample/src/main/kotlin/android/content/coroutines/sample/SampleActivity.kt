@@ -4,8 +4,8 @@ import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.ContentValues
 import android.content.coroutines.CursorMapper
-import android.content.coroutines.deleteCo
-import android.content.coroutines.insertCo
+import android.content.coroutines.deleteRows
+import android.content.coroutines.insertRow
 import android.content.coroutines.queryWithFlow
 import android.database.DataSetObserver
 import android.net.Uri
@@ -64,7 +64,7 @@ class SampleActivity : AppCompatActivity() {
     }
 
     private fun clearPlaylists() = lifecycleScope.launch(exceptionHandler) {
-        val count = contentResolver.deleteCo(URI, null, null)
+        val count = contentResolver.deleteRows(URI, null, null)
         contentResolver.notifyChange(URI, null)
         Toast.makeText(this@SampleActivity,
             "Deleted $count playlist(s)", Toast.LENGTH_SHORT).show()
@@ -81,7 +81,7 @@ class SampleActivity : AppCompatActivity() {
         val contentValues = ContentValues().apply {
             put(MediaStore.Audio.Playlists.NAME, name)
         }
-        val uri = contentResolver.insertCo(URI, contentValues)!!
+        val uri = contentResolver.insertRow(URI, contentValues)!!
         val playlist = Playlist(
             id = ContentUris.parseId(uri),
             name = name

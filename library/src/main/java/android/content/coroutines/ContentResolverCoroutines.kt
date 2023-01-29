@@ -44,19 +44,19 @@ fun <T> ContentResolver.queryWithFlow(
         val observer = object : ContentObserver(sharedObserverHandler) {
             override fun onChange(selfChange: Boolean) {
                 launch {
-                    trySend(queryListCo(uri, projection, selection, selectionArgs, sortOrder, mapper))
+                    trySend(query(uri, projection, selection, selectionArgs, sortOrder, mapper))
                 }
             }
         }
         registerContentObserver(uri, false, observer)
-        trySend(queryListCo(uri, projection, selection, selectionArgs, sortOrder, mapper))
+        trySend(query(uri, projection, selection, selectionArgs, sortOrder, mapper))
         awaitClose {
             unregisterContentObserver(observer)
         }
     }
 }
 
-private suspend fun <T> ContentResolver.queryListCo(
+suspend fun <T> ContentResolver.query(
     uri: Uri,
     projection: Array<String>? = null,
     selection: String? = null,
@@ -91,19 +91,19 @@ private suspend fun <T> ContentResolver.queryListCo(
     }
 }
 
-suspend fun ContentResolver.insertCo(
+suspend fun ContentResolver.insertRow(
     uri: Uri,
     values: ContentValues
 ): Uri? = suspendImpl { insert(uri, values) }
 
 @RequiresApi(Build.VERSION_CODES.R)
-suspend fun ContentResolver.insertCo(
+suspend fun ContentResolver.insertRow(
     uri: Uri,
     values: ContentValues,
     extras: Bundle? = null
 ): Uri? = suspendImpl { insert(uri, values, extras) }
 
-suspend fun ContentResolver.updateCo(
+suspend fun ContentResolver.updateRows(
     uri: Uri,
     values: ContentValues,
     where: String? = null,
@@ -111,20 +111,20 @@ suspend fun ContentResolver.updateCo(
 ): Int = suspendImpl { update(uri, values, where, selectionArgs) }
 
 @RequiresApi(Build.VERSION_CODES.R)
-suspend fun ContentResolver.updateCo(
+suspend fun ContentResolver.updateRows(
     uri: Uri,
     values: ContentValues,
     extras: Bundle? = null
 ): Int = suspendImpl { update(uri, values, extras) }
 
-suspend fun ContentResolver.deleteCo(
+suspend fun ContentResolver.deleteRows(
     uri: Uri,
     where: String? = null,
     selectionArgs: Array<String?>? = null
 ): Int = suspendImpl { delete(uri, where, selectionArgs) }
 
 @RequiresApi(Build.VERSION_CODES.R)
-suspend fun ContentResolver.deleteCo(
+suspend fun ContentResolver.deleteRows(
     uri: Uri,
     extras: Bundle? = null
 ): Int = suspendImpl { delete(uri, extras) }
