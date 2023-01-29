@@ -14,7 +14,7 @@ allprojects {
 Then add this dependency in a project build file:
 ```
 dependencies {
-  implementation 'com.github.alexeiartsimovich:ContentCoroutines:v1.0.0'
+  implementation 'com.github.alexeiartsimovich:ContentCoroutines:v1.1.0'
 }
 ```
 
