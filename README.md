@@ -48,7 +48,7 @@ Another example of how you can observe values from SharedPreferences:
 ```
 GlobalScope.launch {
     val preferences = getSharedPreferences("my_preferences", Context.MODE_PRIVATE)
-    preferences.getStringFlow("my_key")
+    preferences.getStringValueFlow("my_key")
         .collect { value ->
             // Here you get the latest value for your key from the shared preferences
         }
