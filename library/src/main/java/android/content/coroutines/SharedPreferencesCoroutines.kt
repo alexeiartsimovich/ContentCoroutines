@@ -19,7 +19,7 @@ import kotlin.coroutines.suspendCoroutine
 @SuppressLint("ApplySharedPref")
 suspend fun SharedPreferences.edit(commit: Boolean = false, block: SharedPreferences.Editor.() -> Unit) {
     suspendCoroutine<Unit> { continuation ->
-        ExecutorProvider.io.execute {
+        ContentCoroutines.ioExecutor.execute {
             continuation.resumeWith(
                 runCatching<Unit> {
                     val editor = edit()
@@ -81,7 +81,7 @@ suspend fun SharedPreferences.getBooleanValue(key: String, defValue: Boolean? = 
 
 private suspend fun <V> SharedPreferences.getValue(get: SharedPreferences.() -> V): V? {
     return suspendCoroutine<V?> { continuation ->
-        ExecutorProvider.io.execute {
+        ContentCoroutines.ioExecutor.execute {
             continuation.resumeWith(
                 runCatching<V?> { get() }
             )

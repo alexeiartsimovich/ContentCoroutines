@@ -54,12 +54,12 @@ fun <T> ContentResolver.queryWithFlow(
         val observer = object : ContentObserver(sharedObserverHandler) {
             override fun onChange(selfChange: Boolean) {
                 launch {
-                    trySend(query(uri, projection, selection, selectionArgs, sortOrder, mapper))
+                    trySend(queryRows(uri, projection, selection, selectionArgs, sortOrder, mapper))
                 }
             }
         }
         registerContentObserver(uri, false, observer)
-        trySend(query(uri, projection, selection, selectionArgs, sortOrder, mapper))
+        trySend(queryRows(uri, projection, selection, selectionArgs, sortOrder, mapper))
         awaitClose {
             unregisterContentObserver(observer)
         }
@@ -71,7 +71,7 @@ fun <T> ContentResolver.queryWithFlow(
  * Models are mapped using the given [mapper].
  * Throws a [NullPointerException] exception if the query to [uri] returns null.
  */
-suspend fun <T> ContentResolver.query(
+suspend fun <T> ContentResolver.queryRows(
     uri: Uri,
     projection: Array<String>? = null,
     selection: String? = null,
@@ -80,7 +80,7 @@ suspend fun <T> ContentResolver.query(
     mapper: CursorMapper<T>
 ): List<T> {
     return suspendCancellableCoroutine<List<T>> { continuation ->
-        ExecutorProvider.io.execute {
+        ContentCoroutines.ioExecutor.execute {
             if (continuation.isCancelled) {
                 return@execute
             }
@@ -164,7 +164,7 @@ suspend fun ContentResolver.deleteRows(
 
 private suspend fun <T> suspendImpl(lambda: () -> T): T {
     return suspendCancellableCoroutine<T> { continuation ->
-        ExecutorProvider.io.execute {
+        ContentCoroutines.ioExecutor.execute {
             val result: Result<T> = runCatching { lambda.invoke() }
             continuation.resumeWith(result)
         }

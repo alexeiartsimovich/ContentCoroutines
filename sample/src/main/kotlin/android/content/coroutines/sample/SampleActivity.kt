@@ -3,10 +3,7 @@ package android.content.coroutines.sample
 import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.ContentValues
-import android.content.coroutines.CursorMapper
-import android.content.coroutines.deleteRows
-import android.content.coroutines.insertRow
-import android.content.coroutines.queryWithFlow
+import android.content.coroutines.*
 import android.database.DataSetObserver
 import android.net.Uri
 import android.os.Bundle
@@ -19,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
 import kotlin.random.Random
 
 
@@ -53,6 +51,11 @@ class SampleActivity : AppCompatActivity() {
         findViewById<Button>(R.id.request_permissions_button)?.setOnClickListener {
             requestPermissions(PERMISSIONS, RC_REQUEST_PERMISSIONS)
         }
+        ContentCoroutines.setIoExecutor(
+            Executors.newSingleThreadExecutor {
+                Thread(it, "ContentCoroutinesSampleThread")
+            }
+        )
         lifecycleScope.launch(exceptionHandler) {
             val flow = contentResolver.queryWithFlow(uri = URI,
                 projection = PROJECTION, mapper = CURSOR_MAPPER)
