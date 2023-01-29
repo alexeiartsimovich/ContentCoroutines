@@ -16,22 +16,32 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 
 private val sharedObserverHandler: Handler by lazy { Handler(Looper.getMainLooper()) }
 
+/**
+ * Returns a flow of models of type [T]: queries data for the given parameters
+ * and emits a model every time the data changes.
+ * Unlike the [queryWithFlow] method, this method queries only one element by its [elementId].
+ */
 fun <T> ContentResolver.queryByIdWithFlow(
     uri: Uri,
-    itemId: Long,
+    elementId: Long,
     projection: Array<String>? = null,
     mapper: CursorMapper<T>
 ): Flow<T?> {
-    val itemUri = ContentUris.withAppendedId(uri, itemId)
-    return queryWithFlow(itemUri, projection, selection = null, selectionArgs = null, sortOrder = null, mapper)
+    val elementUri = ContentUris.withAppendedId(uri, elementId)
+    return queryWithFlow(elementUri, projection, selection = null, selectionArgs = null, sortOrder = null, mapper)
         .map { list ->
             if (list.size > 1) {
-                throw IllegalArgumentException("Query returned more than one element: uri=$itemUri")
+                throw IllegalArgumentException("Query returned more than one element: uri=$elementUri")
             }
             list.firstOrNull()
         }
 }
 
+/**
+ * Returns a list flow of models of type [T]: queries data for the given parameters
+ * and emits a list every time the data changes.
+ * The parameters have the same meaning as in the [ContentResolver.query] method.
+ */
 fun <T> ContentResolver.queryWithFlow(
     uri: Uri,
     projection: Array<String>? = null,
@@ -56,6 +66,11 @@ fun <T> ContentResolver.queryWithFlow(
     }
 }
 
+/**
+ * Suspendable version of the [ContentResolver.query] method. Returns a list of models of type [T].
+ * Models are mapped using the given [mapper].
+ * Throws a [NullPointerException] exception if the query to [uri] returns null.
+ */
 suspend fun <T> ContentResolver.query(
     uri: Uri,
     projection: Array<String>? = null,
@@ -91,11 +106,17 @@ suspend fun <T> ContentResolver.query(
     }
 }
 
+/**
+ * Suspendable version of the [ContentResolver.insert] method.
+ */
 suspend fun ContentResolver.insertRow(
     uri: Uri,
     values: ContentValues
 ): Uri? = suspendImpl { insert(uri, values) }
 
+/**
+ * Suspendable version of the [ContentResolver.insert] method.
+ */
 @RequiresApi(Build.VERSION_CODES.R)
 suspend fun ContentResolver.insertRow(
     uri: Uri,
@@ -103,6 +124,9 @@ suspend fun ContentResolver.insertRow(
     extras: Bundle? = null
 ): Uri? = suspendImpl { insert(uri, values, extras) }
 
+/**
+ * Suspendable version of the [ContentResolver.update] method.
+ */
 suspend fun ContentResolver.updateRows(
     uri: Uri,
     values: ContentValues,
@@ -110,6 +134,9 @@ suspend fun ContentResolver.updateRows(
     selectionArgs: Array<String?>? = null
 ): Int = suspendImpl { update(uri, values, where, selectionArgs) }
 
+/**
+ * Suspendable version of the [ContentResolver.update] method.
+ */
 @RequiresApi(Build.VERSION_CODES.R)
 suspend fun ContentResolver.updateRows(
     uri: Uri,
@@ -117,12 +144,18 @@ suspend fun ContentResolver.updateRows(
     extras: Bundle? = null
 ): Int = suspendImpl { update(uri, values, extras) }
 
+/**
+ * Suspendable version of the [ContentResolver.delete] method.
+ */
 suspend fun ContentResolver.deleteRows(
     uri: Uri,
     where: String? = null,
     selectionArgs: Array<String?>? = null
 ): Int = suspendImpl { delete(uri, where, selectionArgs) }
 
+/**
+ * Suspendable version of the [ContentResolver.delete] method.
+ */
 @RequiresApi(Build.VERSION_CODES.R)
 suspend fun ContentResolver.deleteRows(
     uri: Uri,
